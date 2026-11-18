@@ -1,0 +1,14 @@
+{
+  "name": "docmost",
+  "version": "0.2.0",
+  "description": "Docmost del HRL para Claude: conectar un repo para que su Documento del sistema se publique solo, preparar el espacio del proyecto, buscar, leer y escribir páginas de la wiki y subir diagramas de draw.io, con tu token personal.",
+  "author": {
+    "name": "DevHRL"
+  },
+  "repository": "https://github.com/DevHRL/hrl-docmost",
+  "keywords": [
+    "docmost",
+    "documentacion",
+    "mcp"
+  ]
+}

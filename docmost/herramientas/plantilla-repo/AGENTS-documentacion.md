@@ -1,5 +1,7 @@
-<!-- docmost:inicio (sección mantenida por DevHRL/hrl-docmost: herramientas/plantilla-repo/CLAUDE-documentacion.md) -->
+<!-- docmost:inicio (sección mantenida por DevHRL/hrl-docmost: herramientas/plantilla-repo/AGENTS-documentacion.md) -->
 ## Documentación (Docmost)
+
+Regla para cualquier persona o agente de IA (Claude Code, Codex…) que cambie este repo.
 
 La documentación del sistema vive en `docs/` y sigue el **Documento del sistema** de
 `DevHRL/hrl-docmost`: 15 páginas obligatorias con sus títulos, su orden (el `nav` de
@@ -30,6 +32,7 @@ La documentación del sistema vive en `docs/` y sigue el **Documento del sistema
 6. En la descripción del PR, marca «Actualicé las páginas…» con la lista, o
    «No aplica, porque: …» con el motivo.
 7. El check **Documentación** del PR valida todo esto (errores en rojo; los textos de
-   ejemplo pendientes, como avisos). Para correrlo antes, con una copia de `hrl-docmost`:
-   `node <hrl-docmost>/herramientas/validar.mjs --repo . --base origin/main`
+   ejemplo pendientes, como avisos). Para correrlo antes:
+   `node "$HOME/.docmost-hrl/devhrl/docmost/herramientas/validar.mjs" --repo . --base origin/main`
+   (las herramientas se descargan con la skill `conectar-repo`; ver `DevHRL/.github`).
 <!-- docmost:fin -->
