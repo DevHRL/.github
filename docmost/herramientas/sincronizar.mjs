@@ -162,13 +162,19 @@ const dm = await new Docmost(env.DOCMOST_URL).login(env.DOCMOST_EMAIL, env.DOCMO
 const espaciosDelBot = await dm.todos('spaces');
 const espacio = espaciosDelBot.find((s) => s.slug === espacioSlug);
 if (!espacio) {
-  console.error(`No existe el espacio «${espacioSlug}» o el bot no es miembro. Ejecuta configurar.mjs.`);
+  console.error(
+    `No existe el espacio «${espacioSlug}» o el bot no es su miembro. El bot publica, así que tiene que ` +
+    'ser escritor del espacio: conectar-proyecto.mjs lo agrega (o, desde Docmost, Configuración del ' +
+    'espacio → Miembros → bot como Escritor).',
+  );
   console.error(`  El bot ve: ${espaciosDelBot.map((s) => `${s.name} (${s.slug})`).join(', ') || 'ningún espacio'}`);
   process.exit(1);
 }
 
 const stats = { creadas: 0, actualizadas: 0, restauradas: 0, sinCambios: 0, borradas: 0, movidas: 0, archivos: 0 };
-const botId = (await dm.post('users/me')).user.id;
+// Id del bot, del token de sesión (JWT, campo sub). No se pregunta a /api/users/me:
+// la puerta de GitHub no deja pasar esa ruta sin sesión de GitHub.
+const botId = JSON.parse(Buffer.from(dm.token.split('.')[1], 'base64url').toString('utf8')).sub;
 
 const hijosDe = (padre) =>
   padre ? dm.todos('pages/sidebar-pages', { pageId: padre.id }) : dm.todos('pages/sidebar-pages', { spaceId: espacio.id });
