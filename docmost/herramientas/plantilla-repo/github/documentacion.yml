@@ -1,0 +1,22 @@
+# Documento del sistema en Docmost (plantilla de DevHRL/hrl-docmost).
+#   · Pull request: valida que docs/ siga la plantilla y esté al día con el código.
+#   · Push a main que toque docs/ o mkdocs.yml: publica en el espacio del proyecto.
+#   · Cada día: vuelve a publicar y deshace lo que se haya editado a mano en Docmost.
+# Necesita los secretos del repo DOCMOST_URL, DOCMOST_EMAIL y DOCMOST_PASSWORD.
+name: Documentación
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths: ['docs/**', 'mkdocs.yml']
+  schedule:
+    - cron: '0 11 * * *' # 06:00 en Lima
+  workflow_dispatch:
+
+jobs:
+  docmost:
+    uses: DevHRL/.github/.github/workflows/docmost.yml@main
+    with:
+      espacio: __ESPACIO__
+    secrets: inherit

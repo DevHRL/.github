@@ -1,0 +1,11 @@
+{
+  "name": "hrl-docmost-herramientas",
+  "private": true,
+  "type": "module",
+  "description": "Configuración de Docmost y sincronización de la documentación de los repos",
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "fractional-indexing-jittered": "1.0.0",
+    "yaml": "2.8.1"
+  }
+}

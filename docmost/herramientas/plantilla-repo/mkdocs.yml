@@ -1,0 +1,23 @@
+# Documento del sistema (plantilla de DevHRL/hrl-docmost).
+# Las 15 páginas de abajo son obligatorias, con estos títulos y en este orden.
+# Se pueden agregar páginas: entre ellas o como subpáginas (la sección pasa a ser
+# una carpeta con su index.md como primera entrada). Ver herramientas/validar.mjs.
+site_name: "[Nombre del sistema]"
+site_description: "[Qué hace el sistema, en una línea]"
+
+nav:
+  - Inicio: index.md
+  - "Contexto y problemática": contexto-y-problematica.md
+  - "Proceso actual (AS-IS)": proceso-actual-as-is.md
+  - "Objetivos y alcance": objetivos-y-alcance.md
+  - "Métricas y evaluación": metricas-y-evaluacion.md
+  - "Proceso propuesto (TO-BE)": proceso-propuesto-to-be.md
+  - "Requisitos": requisitos.md
+  - "Solución propuesta": solucion-propuesta.md
+  - "Stack tecnológico": stack-tecnologico.md
+  - "Calidad y pruebas": calidad-y-pruebas.md
+  - "Despliegue y operación": despliegue-y-operacion.md
+  - "Riesgos": riesgos.md
+  - "Plan, estado y versiones": plan-estado-y-versiones.md
+  - "Usuarios y soporte": usuarios-y-soporte.md
+  - "Anexos": anexos.md

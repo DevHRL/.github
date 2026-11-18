@@ -1,0 +1,138 @@
+# Workflow común: valida y publica el Documento del sistema de un repo en el espacio
+# de su proyecto en Docmost. Va en DevHRL/.github/.github/workflows/docmost.yml, con
+# la carpeta herramientas/ de este repo copiada en docmost/herramientas (ver
+# docs/despliegue.md, sección 2). Cada repo lo llama con
+# herramientas/plantilla-repo/github/documentacion.yml.
+#
+#   · validar: en todo evento. En un pull request, además, compara con la rama base
+#     (lo que cambia el código se refleja en su página). Errores = check en rojo.
+#   · publicar: solo en la rama principal (push, programado o manual). No espera a la
+#     validación: Docmost muestra siempre lo que hay en main. Si el repo todavía no
+#     tiene los secretos del bot, avisa y no publica.
+name: Documentación en Docmost
+
+on:
+  workflow_call:
+    inputs:
+      espacio:
+        description: Slug del espacio del proyecto en Docmost (lo crea conectar-proyecto.mjs)
+        type: string
+        required: true
+      titulo:
+        description: Título de la página raíz (por defecto, site_name de mkdocs.yml)
+        type: string
+        required: false
+      rama:
+        description: Rama que se publica
+        type: string
+        default: main
+      repo-herramientas:
+        description: Repo que contiene docmost/herramientas
+        type: string
+        default: DevHRL/.github
+    secrets:
+      DOCMOST_URL:
+        required: false
+      DOCMOST_EMAIL:
+        required: false
+      DOCMOST_PASSWORD:
+        required: false
+
+jobs:
+  validar:
+    name: Documentación
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo con la documentación
+        uses: actions/checkout@v5
+        with:
+          path: repo
+          fetch-depth: 0
+
+      - name: Herramientas
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ inputs.repo-herramientas }}
+          path: herramientas
+          sparse-checkout: docmost/herramientas
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          # v5 activa sola la caché del gestor del package.json del repo; aquí no hace falta.
+          package-manager-cache: false
+
+      - name: Instalar dependencias
+        working-directory: herramientas/docmost/herramientas
+        run: npm ci --omit=dev
+
+      - name: Validar contra la plantilla y el código
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: >
+          node herramientas/docmost/herramientas/validar.mjs --repo repo
+          ${BASE:+--base "$BASE"}
+
+  publicar:
+    name: Publicar en Docmost
+    if: github.event_name != 'pull_request' && github.ref_name == inputs.rama
+    runs-on: ubuntu-latest
+    # Un push tras otro no debe pisarse a medias.
+    concurrency:
+      group: docmost-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - name: Comprobar secretos
+        id: secretos
+        env:
+          DOCMOST_URL: ${{ secrets.DOCMOST_URL }}
+          DOCMOST_EMAIL: ${{ secrets.DOCMOST_EMAIL }}
+          DOCMOST_PASSWORD: ${{ secrets.DOCMOST_PASSWORD }}
+        run: |
+          if [ -z "$DOCMOST_URL" ] || [ -z "$DOCMOST_EMAIL" ] || [ -z "$DOCMOST_PASSWORD" ]; then
+            echo "::warning::No se publica: faltan los secretos DOCMOST_URL, DOCMOST_EMAIL o DOCMOST_PASSWORD en este repo (en el plan Free, los de la organización no llegan a los repos privados)."
+            echo "### No se publicó en Docmost" >> "$GITHUB_STEP_SUMMARY"
+            echo "Faltan los secretos del bot en este repo. Ver docs/documentar-un-repo.md de DevHRL/hrl-docmost." >> "$GITHUB_STEP_SUMMARY"
+            echo "listo=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "listo=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Repo con la documentación
+        if: steps.secretos.outputs.listo == 'true'
+        uses: actions/checkout@v5
+        with:
+          path: repo
+
+      - name: Herramientas
+        if: steps.secretos.outputs.listo == 'true'
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ inputs.repo-herramientas }}
+          path: herramientas
+          sparse-checkout: docmost/herramientas
+
+      - uses: actions/setup-node@v5
+        if: steps.secretos.outputs.listo == 'true'
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Instalar dependencias
+        if: steps.secretos.outputs.listo == 'true'
+        working-directory: herramientas/docmost/herramientas
+        run: npm ci --omit=dev
+
+      - name: Publicar en Docmost
+        if: steps.secretos.outputs.listo == 'true'
+        env:
+          DOCMOST_URL: ${{ secrets.DOCMOST_URL }}
+          DOCMOST_EMAIL: ${{ secrets.DOCMOST_EMAIL }}
+          DOCMOST_PASSWORD: ${{ secrets.DOCMOST_PASSWORD }}
+          DOCMOST_SPACE: ${{ inputs.espacio }}
+          TITULO: ${{ inputs.titulo }}
+        run: >
+          node herramientas/docmost/herramientas/sincronizar.mjs
+          --repo repo
+          --fuente "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}"
+          ${TITULO:+--titulo "$TITULO"}
